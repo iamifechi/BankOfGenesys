@@ -3,20 +3,20 @@ const Schema = mongoose.Schema;
 
 const transactionSchema = new Schema(
   {
-    senderId: { type: Schema.Types.ObjectId, ref: "users", required: true },
-    receiverAcct: { type: Number, required: true, default: 0 },
-    amount: { type: Number, required: true },
-    currentBalance: { type: Number },
-    type: { type: String, required: true },
+    senderId: { type: Schema.Types.ObjectId, ref: "users", required: true},
+    sender:{ type: Object, required: true, default:{}},
+    receiver: {type: Number, required: true, default: 0},
+    amount: {type: Number,required: true},
+    type: {type: String,required: true},
   },
-  { timestamps: true },
-  { collection: "transactions" }
+    { collection: 'transactions'},
+    { timestamps: true}
 );
 
 transactionSchema.virtual("sendTo", {
-  ref: "users",
+  ref: "Users",
   localField: "receiver",
   foreignField: "_id",
 });
 
-module.exports = mongoose.model("transactions", transactionSchema);
+module.exports = mongoose.model("transaction", transactionSchema);
