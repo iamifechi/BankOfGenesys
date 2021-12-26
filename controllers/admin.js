@@ -35,7 +35,7 @@ admin.registerUser = async (req, res) => {
         password: data.password,
       }).save();
   
-      const token = jwt.sign({ user_id: user._id }, JWT_SECRET);
+      const token = jwt.sign({ user_id: user._id }, JWT_SECRET, { expiresIn: 60 * 10 });
   
       res.status(200).send({
         message: "Account created successfully",

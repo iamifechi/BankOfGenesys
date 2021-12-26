@@ -16,11 +16,13 @@ app.use(morgan('dev'));
 const authRoutes = require('./routes/auth')
 const adminRoutes = require('./routes/admin')
 const userRoutes = require('./routes/users')
+const transactionRoutes = require('./routes/transactions')
 
 //Router Middlewares
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/users', userRoutes);
+app.use('/transactions', transactionRoutes);
 
 
 app.get("/ping", (req, res) => res.status(200).send("Welcome!"));

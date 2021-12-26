@@ -12,7 +12,6 @@ router.post("/login", async (req, res) => {
   
     try{
       const user = await User.findOne({username : data.username})
-      console.log(user);
   
       if(!user) return res.status(400).send({ message: "Invalid username or password"})
       

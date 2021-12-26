@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken")
-const User = require("./../models/user")
+const Users = require("./../models/users")
 
 module.exports = () => {
   return async (req, res, next) => {
@@ -8,11 +8,11 @@ module.exports = () => {
       if (!token) throw new Error("Token not found")
       const decoded = jwt.decode(token)
 
-      const user = await User.findById(decoded.user_id)
+      const user = await Users.findById(decoded.user_id)
       if (!user) throw new Error("Unauthorized user")
       req.USER_ID = user._id
       req.token = token
-
+     
       next()
     } catch (error) {
       next(error)
