@@ -6,26 +6,25 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 
 const MONGODB_URI = process.env.MONGODB_URI
-const port = process.env.PORT || 8080;
+const port = process.env.PORT;
 
-//Middleware
+//Middlewares
 app.use(bodyParser.json());
 app.use(morgan('dev'));
 
 //Importing Routes
 const authRoutes = require('./routes/auth')
 const adminRoutes = require('./routes/admin')
-const userRoutes = require('./routes/users')
 const transactionRoutes = require('./routes/transactions')
 
 //Router Middlewares
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
-app.use('/users', userRoutes);
 app.use('/transactions', transactionRoutes);
 
+//Pinging route
+app.get("/ping", (req, res) => res.status(200).send("Welcome to genesys bank!"));
 
-app.get("/ping", (req, res) => res.status(200).send("Welcome!"));
 
 app.use("**",(req, res) =>res.status(404).send({message: "Route not found"}))
 
@@ -34,6 +33,7 @@ app.use((error, req, res, next) =>{
     res.status(400).send({message: "something went wrong", error: error})
   })
 
+  //Listening to server
 app.listen(port, async () => {
     try {
      await mongoose.connect(MONGODB_URI, {

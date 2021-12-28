@@ -13,10 +13,5 @@ const transactionSchema = new Schema(
     { timestamps: true}
 );
 
-transactionSchema.virtual("sendTo", {
-  ref: "Users",
-  localField: "receiver",
-  foreignField: "_id",
-});
 
 module.exports = mongoose.model("transaction", transactionSchema);

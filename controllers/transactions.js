@@ -1,5 +1,6 @@
 const Transactions = require("./../models/transactions")
 const Users = require("./../models/users");
+const myModule = require('../myModule')
 
 const transactions = {};
 
@@ -45,13 +46,20 @@ transactions.deposit = async (req, res) => {
   };
 
 transactions.withdraw = async (req, res) =>{
+    
     const data = req.body;
     const amount = parseInt(data.amount);
     const senderId = req.USER_ID
     const user = await Users.findById(senderId);
     const accountBalance = user.accountBalance;
-       
     try{
+        const reqPin = data.pin;
+        const userPin = user.transactionPin
+
+        if(reqPin != userPin){
+            return res.status(400).send({error:"Invalid transaction pin"})
+        }
+
         if(!(data.type == 'withdrawal')){
             return res.status(400).send({error: 'this is the wrong route'})
         }
@@ -90,17 +98,20 @@ transactions.transfer = async (req, res) =>{
     const data = req.body;
     const amount = parseInt(data.amount);
     const senderId = req.USER_ID
-    
-    console.log(data);
 
     try{
+        
         const sender = await Users.findById(senderId);
         const senderBalance = sender.accountBalance;
         const receiverAccountNumber = data.receiverAccount
         const receiver = await Users.findOne({accountNumber: receiverAccountNumber})
         const receiverBalance = receiver.accountBalance;
+        const reqPin = data.pin;
+        const userPin = sender.transactionPin
 
-        console.log("THIS IS RECEIVER", receiver)
+        if(reqPin != userPin){
+            return res.status(400).send({error:"Invalid transaction pin"})
+        }
 
         if(!(data.type == 'transfer')){
             return res.status(400).send({error: 'this is the wrong route'})
@@ -111,9 +122,7 @@ transactions.transfer = async (req, res) =>{
         if(senderBalance < amount){
             return res.status(400).send({error : 'Insufficient funds'})
         }
-        // if(!receiver){
-        //     return res.status(400).send({error : 'Could not find receiver account'})
-        // }
+      
         if(!receiver || receiverAccountNumber.length !== 10 || !parseInt(receiverAccountNumber)){
             return res.status(400).send({error : 'Invalid receiver account number'})
         }
@@ -149,6 +158,46 @@ transactions.transfer = async (req, res) =>{
     }catch(error){
         console.log(error)
         res.status(400).send({message: "Could not perform transaction", error: error})}
+}
+
+transactions.history = async (req, res) =>{
+    try{
+        const userId = req.USER_ID;
+        const sort = req.query.sort
+        const transactions = await Transactions.find({senderId : userId})
+        if(sort){
+            console.log("this is query", sort)
+            let sortedTransactions = transactions.filter(transaction => transaction.type == sort)
+            switch(sort){
+                case 'deposits':
+                sortedTransactions = transactions.filter(transaction => transaction.type == 'deposit');
+                break;
+                case 'withdrawals':
+                sortedTransactions = transactions.filter(transaction => transaction.type == 'withdrawal');
+                break;
+                case 'transfers':
+                sortedTransactions = transactions.filter(transaction => transaction.type == 'transfer');
+                break;
+                case 'reversals':
+                sortedTransactions = transactions.filter(transaction => transaction.type == 'reversed');
+                break;
+                default:
+                return res.status(400).send({message:"could not find transactions, try using deposits, withdrawals, tranfers or reversals"})
+                break;
+            }
+            return res.status(200).send({
+                message: `Request successful, transactions sorted by ${sort}`,
+                data: sortedTransactions
+            })
+        }
+        return res.status(200).send({
+            message: 'Request successful, transactions retrieved',
+            data: transactions
+        })
+    }catch (error){
+        console.log(error)
+        res.status(400).send({message: "Could not perform operation", error: error})
+    }
 }
 
 module.exports = transactions
